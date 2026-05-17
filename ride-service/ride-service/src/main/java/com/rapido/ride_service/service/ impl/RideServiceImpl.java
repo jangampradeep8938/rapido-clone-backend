@@ -3,18 +3,23 @@ package com.rapido.ride_service.service.impl;
 import com.rapido.ride_service.dto.RideRequestDTO;
 import com.rapido.ride_service.entity.Ride;
 import com.rapido.ride_service.entity.RideStatus;
+import com.rapido.ride_service.event.RideStatusEvent;
+import com.rapido.ride_service.event.RideStatusPublisher;
 import com.rapido.ride_service.repository.RideRepository;
 import com.rapido.ride_service.service.RideService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class RideServiceImpl implements RideService {
 
-    private final RideRepository rideRepository;
+    @Autowired
+    private RideRepository rideRepository;
+
+    @Autowired
+    private RideStatusPublisher statusPublisher;
 
     @Override
     public Ride requestRide(String email, RideRequestDTO dto) {
@@ -32,7 +37,20 @@ public class RideServiceImpl implements RideService {
                 .requestedAt(LocalDateTime.now())
                 .build();
 
-        return rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
+
+        RideStatusEvent event = RideStatusEvent.builder()
+                .rideId(savedRide.getId())
+                .status(RideStatus.REQUESTED)
+                .message("Ride Requested")
+                .build();
+
+        statusPublisher.publishStatus(
+                savedRide.getId(),
+                event
+        );
+
+        return savedRide;
     }
 
     @Override
@@ -43,7 +61,20 @@ public class RideServiceImpl implements RideService {
 
         ride.setStatus(RideStatus.ACCEPTED);
 
-        return rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
+
+        RideStatusEvent event = RideStatusEvent.builder()
+                .rideId(savedRide.getId())
+                .status(RideStatus.ACCEPTED)
+                .message("Ride Accepted")
+                .build();
+
+        statusPublisher.publishStatus(
+                savedRide.getId(),
+                event
+        );
+
+        return savedRide;
     }
 
     @Override
@@ -54,7 +85,20 @@ public class RideServiceImpl implements RideService {
 
         ride.setStatus(RideStatus.STARTED);
 
-        return rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
+
+        RideStatusEvent event = RideStatusEvent.builder()
+                .rideId(savedRide.getId())
+                .status(RideStatus.STARTED)
+                .message("Ride Started")
+                .build();
+
+        statusPublisher.publishStatus(
+                savedRide.getId(),
+                event
+        );
+
+        return savedRide;
     }
 
     @Override
@@ -66,7 +110,20 @@ public class RideServiceImpl implements RideService {
         ride.setStatus(RideStatus.COMPLETED);
         ride.setCompletedAt(LocalDateTime.now());
 
-        return rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
+
+        RideStatusEvent event = RideStatusEvent.builder()
+                .rideId(savedRide.getId())
+                .status(RideStatus.COMPLETED)
+                .message("Ride Completed")
+                .build();
+
+        statusPublisher.publishStatus(
+                savedRide.getId(),
+                event
+        );
+
+        return savedRide;
     }
 
     @Override
@@ -77,6 +134,19 @@ public class RideServiceImpl implements RideService {
 
         ride.setStatus(RideStatus.CANCELLED);
 
-        return rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
+
+        RideStatusEvent event = RideStatusEvent.builder()
+                .rideId(savedRide.getId())
+                .status(RideStatus.CANCELLED)
+                .message("Ride Cancelled")
+                .build();
+
+        statusPublisher.publishStatus(
+                savedRide.getId(),
+                event
+        );
+
+        return savedRide;
     }
 }

@@ -1,18 +1,23 @@
 package com.rapido.ride_service.controller;
 
 import com.rapido.ride_service.dto.RideRequestDTO;
+import com.rapido.ride_service.event.DriverLocationEvent;
 import com.rapido.ride_service.service.RideService;
-import lombok.RequiredArgsConstructor;
+import com.rapido.ride_service.tracker.TrackingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/rides")
-@RequiredArgsConstructor
 public class RideController {
 
-    private final RideService rideService;
+    @Autowired
+    private RideService rideService;
+
+    @Autowired
+    private TrackingService trackingService;
 
     @PostMapping("/request")
     public ResponseEntity<?> requestRide(
@@ -61,5 +66,14 @@ public class RideController {
         return ResponseEntity.ok(
                 rideService.cancelRide(rideId)
         );
+    }
+
+    @PostMapping("/driver/location/live")
+    public ResponseEntity<?> updateLiveLocation(
+            @RequestBody DriverLocationEvent event) {
+
+        trackingService.processLocation(event);
+
+        return ResponseEntity.ok("Location Updated");
     }
 }
