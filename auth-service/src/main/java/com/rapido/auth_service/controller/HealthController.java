@@ -6,8 +6,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthController {
 
-    @GetMapping("/health")
-    public String health() {
-        return "Service Running Successfully";
+    @GetMapping("/auth/test")
+    public String test() {
+        return "Auth Service Working Successfully!";
+    }
+
+    @GetMapping("/auth/token")
+    public String token() {
+        return "JWT Test Endpoint";
     }
 }
